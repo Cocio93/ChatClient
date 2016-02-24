@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -41,6 +43,7 @@ public class Streamer implements Runnable{
         } else {
             writers = getUsers(msg.getRec());
         }
+        Logger.getLogger(Log.LOG_NAME).log(Level.INFO, "Forwarding message from " + msg.getSender() +  " to users: " + rec.toString());
         for (PrintWriter pw : writers) {
             String message = "MESSAGE#" + msg.getSender() + "#" + msg.getText();
             System.out.println("Sending message - " + message);

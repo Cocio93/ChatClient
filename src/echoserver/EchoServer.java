@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 public class EchoServer implements ServerInterface {
     private static final String LOG_FILE = "serverlog.txt";
@@ -14,17 +17,17 @@ public class EchoServer implements ServerInterface {
     private static final Map<String, PrintWriter> clients = new HashMap();
     private List<Message> messages = Collections.synchronizedList(new ArrayList());
     private static int port;
-    private static String host;
+    private static String host = "localhost";
     private  ServerSocket serverSocket;
     private static Socket clientSocket;
 
     public static void main(String[] args) throws IOException {
-        host = "100.118.104.61";
         if (args.length == 1) {
             port = Integer.parseInt(args[0]);
         } else {
             port = 9090;
         }
+        Log.setLogFile("logFile.txt", "ServerLog");
         new EchoServer().runServer(host, port);
 
     }
@@ -35,6 +38,7 @@ public class EchoServer implements ServerInterface {
             serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(host, port));
             System.out.println("Server is running ");
+            Logger.getLogger(Log.LOG_NAME).log(Level.INFO, "Server started. Listening on: " + port + ", bound to " + host);
             threadStreamer(new Streamer(messages, this));
             while (true) {
                 System.out.println("Listening for clients...");
@@ -66,12 +70,14 @@ public class EchoServer implements ServerInterface {
     @Override
     public void addClient(String client, PrintWriter out) {
         clients.put(client, out);
+        sendUsers();
     }
     
     @Override
     public void removeClient(String client) {
         clients.get(client).close();
         clients.remove(client);
+        sendUsers();
     }
     @Override
     public void addMessage(Message message) {
@@ -81,6 +87,18 @@ public class EchoServer implements ServerInterface {
     @Override
     public Map<String, PrintWriter> getClients() {
         return clients;
+    }
+    
+    public void sendUsers() {
+        String tag = "USERS#";
+        String online = "";
+        for (Map.Entry<String, PrintWriter> set : getClients().entrySet()) {
+            online += set.getKey() + ",";
+        }
+        online = online.substring(0, tag.length()-1);
+        for (Map.Entry<String, PrintWriter> set : getClients().entrySet()) {
+            set.getValue().println(tag + online);
+        }
     }
 
 

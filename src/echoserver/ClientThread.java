@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +49,7 @@ public class ClientThread implements Runnable {
                 switch (tag) {
                     case "SEND":
                         System.out.println("Received message - " + splitMessage[2] + " - from " + username);
+                        Logger.getLogger(Log.LOG_NAME).log(Level.INFO, "Received message - " + splitMessage[2] + " - from " + username);
                         String receiver = splitMessage[1];
                         String message = splitMessage[2];
                         ArrayList<String> receivers = new ArrayList() {};    
@@ -67,6 +69,7 @@ public class ClientThread implements Runnable {
                             username = splitMessage[1];
                             server.addClient(username, out);
                             System.out.println("Client confirmed name - " + username);
+                            Logger.getLogger(Log.LOG_NAME).log(Level.INFO, "User - '" + username + "' joined the server");
                         } else {
                             System.err.println(username + "send invalid request");
                             out.println("Error in chat protocol!");
@@ -77,11 +80,12 @@ public class ClientThread implements Runnable {
                         System.out.println(username + " left");
                         out.println("Byyee, have a beautiful time!");
                         server.removeClient(username);
+                        Logger.getLogger(Log.LOG_NAME).log(Level.INFO, "Removed user - '" + username + "'. Reason: Send LOGOUT");
                          {
                             try {
                                 socket.close();
                             } catch (IOException ex) {
-                                Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
+                                Logger.getLogger(Log.LOG_NAME).log(Level.SEVERE, ex.getMessage());
                             }
                         }
                         break;
@@ -92,8 +96,6 @@ public class ClientThread implements Runnable {
                         break;
                 }
             }
-
         }
     }
-
 }
